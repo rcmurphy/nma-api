@@ -1,0 +1,185 @@
+#%RAML 0.8
+title: Notify My Android
+baseUri: https://www.notifymyandroid.com/publicapi
+mediaType: application/xml
+/notify:
+  displayName: Notify
+  post:
+    description: Sends a notification to a device.
+    queryParameters:
+      apikey:
+        displayName: API Key
+        type: string
+        required: true
+        description: API keys separated by commas. Each API key is a 48 bytes hexadecimal string. When using multiple keys, you will only get a failure respose if all of them are not valid.
+        pattern: ^[0-9a-f]{48}(,[0-9a-f]{48})*$
+      application:
+        displayName: Application
+        description: The name of the application that is generating the call.
+        example: Nagios
+        type: string
+        required: true
+        maxLength: 256
+      event:
+        displayName: Event
+        description: The event that is been notified. Depending on your application, it can be a subject or a brief description.
+        example: Service is down!
+        type: string
+        required: true
+        maxLength: 1000
+      description:
+        displayName: Description
+        description: The notification text. Depending on your application, it can be a body of the message or a full description.
+        example: |
+          Server: 1.2.3.4
+          Service: mysqld
+          Status: DOWN
+          Time of the alert: 1/21/2011 1:32am
+        type: string
+        required: true
+        maxLength: 10000
+      priority:
+        displayName: Priority
+        description: A priority level for this notification. This is optional and in the future will be used to change the way NMA alerts you.
+        example: |
+          -2 = Very Low,
+          -1 = Moderate,
+          0 = Normal,
+          1 = High,
+          2 = Emergency
+        type: integer
+        required: false
+        minimum: -2
+        maximum: 2
+      developerkey:
+        displayName: Developer Key
+        description: Your developer key, if you have one.
+        type: string
+        required: false
+        minLength: 48
+        maxLength: 48
+      url:
+        displayName: URL
+        description: An URL/URI can be attached to your notification. You can send URL's or URI's supported by your device. The user will be able to long-click the notification and choose to follow the attached URL/URI, launching the application that can handle it.
+        type: string
+        required: false
+        maxLength: 2000
+      content-type:
+        displayName: Content Type
+        description: You can set this parameter to "text/html" while sending the notification, and basic html tags will be interpreted and rendered while displaying the notification.
+        enum:
+          - text/html
+          - text/plain
+        required: false
+    responses:
+      200:
+        description: Notification submitted.
+        body:
+          application/xml:
+            example: |
+              <?xml version="1.0" encoding="UTF-8"?>
+              <nma>
+                <success code="200" remaining="CALLSREMAINING" resettimer="TIMELEFT" />
+              </nma>
+      400:
+        description: The data supplied is in the wrong format, invalid length or null.
+        body:
+          application/xml:
+            example: |
+              <?xml version="1.0" encoding="UTF-8"?>
+              <nma>
+                <error code="ERRORCODE">ERRORMESSAGE</error>
+              </nma>
+      401:
+        description: None of the API keys provided were valid.
+        body:
+          application/xml:
+            example: |
+              <?xml version="1.0" encoding="UTF-8"?>
+              <nma>
+                <error code="ERRORCODE">ERRORMESSAGE</error>
+              </nma>
+      402:
+        description: Maximum number of API calls per hour exceeded.
+        body:
+          application/xml:
+            example: |
+              <?xml version="1.0" encoding="UTF-8"?>
+              <nma>
+                <error code="402" resettimer="TIMELEFT">Your IP exceeded the maximum number of API calls per hour allowed.</error>
+              </nma>
+      500:
+        description: Internal server error. Please contact our support if the problem persists.
+        body:
+          application/xml:
+            example: |
+              <?xml version="1.0" encoding="UTF-8"?>
+              <nma>
+                <error code="ERRORCODE">ERRORMESSAGE</error>
+              </nma>
+              
+/verify:
+  get:
+    description: This call accepts a single API key as a parameter and returns if that key is valid or not.
+    queryParameters:
+      apikey:
+        displayName: API Key
+        type: string
+        required: true
+        description: The api key that you want to test.
+        pattern: ^[0-9a-f]{48}$
+        minLength: 48
+        maxLength: 48
+      developerkey:
+        displayName: Developer Key
+        description: Your developer key, if you have one.
+        type: string
+        required: false
+        minLength: 48
+        maxLength: 48
+    responses:
+      200:
+        description: The 'apikey' supplied is valid.
+        body:
+          application/xml:
+            example: |
+              <?xml version="1.0" encoding="UTF-8"?>
+              <nma>
+                <success code="200" remaining="CALLSREMAINING" resettimer="TIMELEFT" />
+              </nma>
+      400:
+        description: The data supplied is in the wrong format, invalid length or null.
+        body:
+          application/xml:
+            example: |
+              <?xml version="1.0" encoding="UTF-8"?>
+              <nma>
+                <error code="ERRORCODE">ERRORMESSAGE</error>
+              </nma>
+      401:
+        description: The 'apikey' provided is not valid.
+        body:
+          application/xml:
+            example: |
+              <?xml version="1.0" encoding="UTF-8"?>
+              <nma>
+                <error code="ERRORCODE">ERRORMESSAGE</error>
+              </nma>
+      402:
+        description: Maximum number of API calls per hour exceeded.
+        body:
+          application/xml:
+            example: |
+              <?xml version="1.0" encoding="UTF-8"?>
+              <nma>
+                <error code="402" resettimer="TIMELEFT">Your IP exceeded the maximum number of API calls per hour allowed.</error>
+              </nma>
+      500:
+        description: Internal server error. Please contact our support if the problem persists.
+        body:
+          application/xml:
+            example: |
+              <?xml version="1.0" encoding="UTF-8"?>
+              <nma>
+                <error code="ERRORCODE">ERRORMESSAGE</error>
+              </nma>
